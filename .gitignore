@@ -1,0 +1,9 @@
+Instagram_Scraper/node_modules/
+Instagram_Scraper/package-lock.json
+Instagram_Scraper/package.json
+Pinterest_Scraper/__pycache__/
+Pinterest_Scraper/.idea/
+Pinterest_Scraper/build/
+Pinterest_Scraper/venv/
+Pinterest_Scraper/new.iml
+Pinterest_Scraper/pinterest_scraper.spec
