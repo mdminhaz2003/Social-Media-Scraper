@@ -19,9 +19,9 @@ driver.implicitly_wait(time_to_wait=5)
 driver.execute_script("window.open('');")
 
 
-def scraper(index: int) -> dict:
+def scraper(index: int, single_twitter_username: str) -> dict:
     driver.switch_to.window(driver.window_handles[index])
-    driver.get(f'https://www.twitter.com/{username}')
+    driver.get(f'https://www.twitter.com/{single_twitter_username}')
     driver.implicitly_wait(5)
     data = {}
     try:
@@ -67,12 +67,12 @@ for username in twitter_username:
         single_data[0, 2] = df['Twitter_User'][df_index_number]
 
         if index_number % 2 == 1:
-            single_data_set = scraper(index=0)
+            single_data_set = scraper(index=0, single_twitter_username=username)
             single_data[0, 3] = single_data_set["tweets_count"]
             single_data[0, 4] = single_data_set["followers_count"]
             single_data[0, 5] = single_data_set["following_count"]
         elif index_number % 2 == 0:
-            single_data_set = scraper(index=1)
+            single_data_set = scraper(index=1, single_twitter_username=username)
             single_data[0, 3] = single_data_set["tweets_count"]
             single_data[0, 4] = single_data_set["followers_count"]
             single_data[0, 5] = single_data_set["following_count"]
