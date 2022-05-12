@@ -14,6 +14,7 @@ twitter_username = df['Twitter_User'].dropna()
 
 options = Options()
 driver = webdriver.Chrome(executable_path=os.getenv("DRIVER_PATH"), options=options)
+driver.set_window_size(width=600, height=750)
 driver.get("https://www.twitter.com")
 driver.implicitly_wait(time_to_wait=5)
 driver.execute_script("window.open('');")
