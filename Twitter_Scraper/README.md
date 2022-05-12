@@ -26,7 +26,7 @@ Also, If you are using python3 version then you can try it :-
 ```
 If you want to create executable file for your operating system :-
 ```bash
-    pyinstaller --onefile pinterest_scraper.py
+    pyinstaller --onefile twitter_scraper.py
 ```
 
 ## :link: &nbsp;Download Webdriver
