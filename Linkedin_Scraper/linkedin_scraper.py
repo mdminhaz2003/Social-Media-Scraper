@@ -4,16 +4,19 @@ import pandas as pd
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 
 load_dotenv(dotenv_path="./.env")
 
 df = pd.read_csv(filepath_or_buffer=os.getenv("CSV_FILE_PATH"))
 linkedin_usernames = df['Linkedin_Company'].dropna()
 
-options = Options()
-driver = webdriver.Chrome(executable_path=os.getenv("DRIVER_PATH"), options=options)
+chrome_options = webdriver.ChromeOptions()
+prefs = {"profile.default_content_setting_values.notifications": 2}
+chrome_options.add_experimental_option("prefs", prefs)
+driver = webdriver.Chrome(executable_path=os.getenv("DRIVER_PATH"), options=chrome_options)
 
 driver.set_window_size(width=600, height=750)
 
@@ -44,31 +47,40 @@ def scraper(index: int, linkedin_username) -> dict:
     data = {}
 
     try:
-        total_followers_count = driver.find_element(
-            by=By.XPATH,
-            value='/html/body/div[5]/div[3]/div/div[2]/div/div[2]/main/div[1]/section/div/div[2]/div[1]/div[1]/div[2]/div/div/div[2]/div[2]'
+        total_followers_tag = ec.presence_of_element_located(
+            (
+                By.XPATH,
+                '/html/body/div[5]/div[3]/div/div[2]/div/div[2]/main/div[1]/section/div/div[2]/div[1]/div[1]/div['
+                '2]/div/div/div[2]/div[2] '
+            )
         )
+        total_followers_count = WebDriverWait(driver=driver, timeout=10).until(method=total_followers_tag)
         print(f"{linkedin_username} followers == {total_followers_count.text[:-10]}")
         data["followers_count"] = total_followers_count.text[:-10]
-    except NoSuchElementException:
-        data["followers_count"] = "Check Manually"
+    except TimeoutException as timeout_exception:
+        print(timeout_exception)
+        data["followers_count"] = "Manual Check"
 
     try:
-        total_followings_count = driver.find_element(
-            by=By.ID,
-            value='ember35'
+        total_employees_tag = ec.presence_of_element_located(
+            (
+                By.ID,
+                'ember35'
+            )
         )
-        following_text = total_followings_count.text
-        following_text = following_text[8:]
-        following_text = following_text[:-22]
-        print(f"{linkedin_username} following == {following_text}")
-        data["following_count"] = following_text
-    except NoSuchElementException:
-        data["following_count"] = "Check Manually"
+        total_employees_count = WebDriverWait(driver=driver, timeout=10).until(method=total_employees_tag)
+        employee_count_text = total_employees_count.text
+        employee_count_text = employee_count_text[8:]
+        employee_count_text = employee_count_text[:-22]
+        print(f"{linkedin_username} employee == {employee_count_text}")
+        data["employee_count"] = employee_count_text
+    except TimeoutException as timeout_exception:
+        print(timeout_exception)
+        data["employee_count"] = "Manual Check"
     return data
 
 
-all_data = np.array(["Name", "Web", "Linkedin Username", "Total Followers", "Total Following"], ndmin=2)
+all_data = np.array(["Name", "Web", "Linkedin Username", "Total Followers", "Total Employees"], ndmin=2)
 index_number = 1
 for username in linkedin_usernames:
     if username != "":
@@ -81,18 +93,34 @@ for username in linkedin_usernames:
         if index_number % 2 == 1:
             single_data_set = scraper(index=0, linkedin_username=username)
             single_data[0, 3] = single_data_set["followers_count"]
-            single_data[0, 4] = single_data_set["following_count"]
+            single_data[0, 4] = single_data_set["employee_count"]
         elif index_number % 2 == 0:
             single_data_set = scraper(index=1, linkedin_username=username)
             single_data[0, 3] = single_data_set["followers_count"]
-            single_data[0, 4] = single_data_set["following_count"]
+            single_data[0, 4] = single_data_set["employee_count"]
         else:
             pass
         all_data = np.append(all_data, single_data, axis=0)
     else:
         pass
     index_number += 1
-print(all_data)
+
+for skip_data in all_data:
+    if skip_data[3] == "Manual Check":
+        if index_number % 2 == 1:
+            single_data_set = scraper(index=0, linkedin_username=skip_data[2])
+            skip_data[3] = single_data_set["followers_count"]
+            skip_data[4] = single_data_set["employee_count"]
+        elif index_number % 2 == 0:
+            single_data_set = scraper(index=1, linkedin_username=skip_data[2])
+            skip_data[3] = single_data_set["followers_count"]
+            skip_data[4] = single_data_set["employee_count"]
+        else:
+            pass
+    else:
+        pass
+    index_number += 1
+
+driver.quit()
 new_dataframe = pd.DataFrame(data=all_data[1:], columns=all_data[0])
 new_dataframe.to_csv("linkedin_result.csv", index=False)
-driver.quit()
