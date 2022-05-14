@@ -4,4 +4,5 @@ numpy==1.22.2
 pandas==1.4.1
 python-dotenv==0.20.0
 pyinstaller==5.0.1
-pip install html5lib
+html5lib==1.1
+
