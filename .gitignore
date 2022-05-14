@@ -22,5 +22,8 @@ Linkedin_Scraper/.~lock.linkedin_result.csv#
 
 Facebook_Page_Scraper/.idea/
 Facebok_Page_Scraper/venv/
+Facebook_Page_Scraper/build/
+Facebook_Page_Scraper/facebook_page_scraper.spec
+Facebook_Page_Scraper/facebook_scraper.spec
 Facebook_Page_Scraper/Facebook_Page_Scraper.iml
 
