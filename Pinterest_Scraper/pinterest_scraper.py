@@ -18,7 +18,7 @@ async def make_request(session: aiohttp.ClientSession, username: str) -> None:
         response_text = await response.read()
 
     try:
-        soup = BeautifulSoup(response_text.decode('utf-8'), 'html5lib')
+        soup = BeautifulSoup(response_text.decode('utf-8'), 'html.parser')
         followers_tag = soup.find(name='meta', property="pinterestapp:followers")["content"]
         following_tag = soup.find(name='meta', property="pinterestapp:following")["content"]
     except TypeError as unresolved_username:
