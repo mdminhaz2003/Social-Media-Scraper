@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
-from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,31 +13,35 @@ load_dotenv(dotenv_path="./.env")
 df = pd.read_csv(filepath_or_buffer=os.getenv("CSV_FILE_PATH"))
 facebook_page_usernames = df['Facebook_Page'].dropna()
 
-chrome_options = webdriver.ChromeOptions()
+chrome_options = uc.ChromeOptions()
 prefs = {"profile.default_content_setting_values.notifications": 2}
 chrome_options.add_experimental_option("prefs", prefs)
-driver = webdriver.Chrome(executable_path=os.getenv("DRIVER_PATH"), options=chrome_options)
+driver = uc.Chrome(executable_path=os.getenv("DRIVER_PATH"), options=chrome_options)
 
 driver.set_window_size(width=600, height=750)
 
 driver.get("https://www.facebook.com/login/")
+email_input_field_finder = ec.presence_of_element_located(
+    (By.ID, "email")
+)
+
+password_input_field_finder = ec.presence_of_element_located(
+    (By.ID, "pass")
+)
+
+login_button_finder = ec.presence_of_element_located(
+    (By.ID, "loginbutton")
+)
+
+email_input_field = WebDriverWait(driver=driver, timeout=10).until(method=email_input_field_finder)
+password_input_field = WebDriverWait(driver=driver, timeout=10).until(method=password_input_field_finder)
+login_button = WebDriverWait(driver=driver, timeout=10).until(method=login_button_finder)
+
+email_input_field.send_keys(os.getenv("FACEBOOK_EMAIL"))
+password_input_field.send_keys(os.getenv("FACEBOOK_PASSWORD"))
+
+login_button.click()
 driver.implicitly_wait(time_to_wait=5)
-driver.find_element(
-    by=By.ID,
-    value="email"
-).send_keys(os.getenv("FACEBOOK_EMAIL"))
-
-driver.find_element(
-    by=By.ID,
-    value="pass"
-).send_keys(os.getenv("FACEBOOK_PASSWORD"))
-
-driver.find_element(
-    by=By.ID,
-    value="loginbutton"
-).click()
-driver.implicitly_wait(5)
-
 driver.execute_script("window.open('https://www.facebook.com/');")
 
 
